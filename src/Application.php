@@ -22,9 +22,8 @@ class Application
     const SYNOPSIS_QUERY = "//div[@class='methodsynopsis dc-description']";
 
     /**
-     * Application constructor.
-     * @param $path
-     * @param $translator
+     * @param string $path
+     * @param \Zend\Mvc\I18n\Translator $translator
      */
     public function __construct($path, $translator)
     {
@@ -38,7 +37,9 @@ class Application
     public function execute($sectionFileName)
     {
         $sectionDoc = new \DOMDocument();
-        @$sectionDoc->loadHTMLFile($sectionFileName);
+        if (!@$sectionDoc->loadHTMLFile($sectionFileName)) {
+            die("Section file is absent!");
+        }
         $sectionXpath = new \DOMXPath($sectionDoc);
         $list = $sectionXpath->query(self::LIST_QUERY);
 
@@ -47,7 +48,9 @@ class Application
             $functionDoc = new \DOMDocument();
             $functionDoc->preserveWhiteSpace = true;
             $functionDoc->formatOutput = true;
-            @$functionDoc->loadHTMLFile($functionFileName);
+            if (!@$functionDoc->loadHTMLFile($functionFileName)) {
+                die("Function description file is absent!");
+            }
             $functionXpath = new \DOMXPath($functionDoc);
             $functionName = $functionXpath->query(self::NAME_QUERY)->item(0)->nodeValue;
             $functionTitle = $functionXpath->query(self::TITLE_QUERY)->item(0)->nodeValue;
@@ -57,21 +60,24 @@ class Application
                 continue;
             }
 
-            $html = $this->getHtml($synopsis->item(0));
             $name = new Name($functionName, $functionTitle);
-            $desc = new Description($html);
+            $desc = new Description($this->getHtml($synopsis->item(0)));
             $text = sprintf('%s %s', $this->translator->translate('Function'), $name->asText());
             $link = sprintf("<a href='https://www.php.net/manual/%s/function.%s.php'>%s</a>",
                 $this->translator->getLocale(),
                 $functionName, $this->translator->translate('Details'));
             //important to wrap multiline lines into double quotes for ANKI
             //other double quotes better to replace with single ones
-            $extra = sprintf("\"%s\"<br>%s", $desc->asHtml(), $link);
+            $extra = sprintf("\"%s\"<br><br>%s", $desc->asHtml(), $link);
             $card = sprintf("%s\t%s\t\n", $text, $extra);
-            file_put_contents($this->path . '/output.csv', $card, FILE_APPEND);
+            file_put_contents($this->path . '../output.csv', $card, FILE_APPEND);
         }
     }
 
+    /**
+     * @param \DOMNode $element
+     * @return string
+     */
     protected function getHtml(\DOMNode $element)
     {
         $innerHTML = "";
