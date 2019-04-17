@@ -1,0 +1,45 @@
+{
+  "name": "permiakov/php-doc-scraper",
+  "description": "scrape php.net documentation",
+  "keywords": [
+    "php.net",
+    "documentation",
+    "scrape",
+    "crawler",
+    "parser",
+    "csv",
+    "anki"
+  ],
+  "homepage": "https://github.com/permiakov/php-doc-scraper",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "illia permiakov",
+      "email": "dn.permyakov@gmail.com",
+      "homepage": "https://github.com/permiakov/php-doc-scraper",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=7.1.0",
+    "zendframework/zend-mvc-i18n": "^1.1"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^7.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Permiakov\\PHPDocScraper\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Permiakov\\PHPDocScraper\\Test\\": "tests"
+    }
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "1.0-dev"
+    }
+  }
+}
