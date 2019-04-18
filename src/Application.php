@@ -50,7 +50,6 @@ class Application
         }
         $sectionXpath = new \DOMXPath($sectionDoc);
         $list = $sectionXpath->query(self::LIST_QUERY);
-
         foreach ($list as $item) {
             $functionFileName = sprintf("%s%s", DATA_PATH, $item->nodeValue);
             $functionDoc = new \DOMDocument();
@@ -62,6 +61,7 @@ class Application
             $functionXpath = new \DOMXPath($functionDoc);
             $functionName = $functionXpath->query(self::NAME_QUERY)->item(0)->nodeValue;
             $functionTitle = $functionXpath->query(self::TITLE_QUERY)->item(0)->nodeValue;
+            $functionTitle = str_replace("\n", '', $functionTitle);
             $synopsis = $functionXpath->query(self::SYNOPSIS_QUERY);
 
             if (!$synopsis->item(0)) {
