@@ -22,6 +22,9 @@ class Description
      */
     public function asHtml()
     {
+        //@todo replace <a href=""> contain with adding base URL https://www.php.net/manual/ru/
+        //for links inside html like parameter types
+
         return preg_replace('/\"/', "'", $this->synopsisHtml);
     }
 }
