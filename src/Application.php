@@ -4,15 +4,20 @@ namespace Permiakov\PHPDocScraper;
 
 use Permiakov\PHPDocScraper\Func\Description;
 use Permiakov\PHPDocScraper\Func\Name;
+use Zend\I18n\Translator\Translator;
 
 class Application
 {
     /**
      * @var string
      */
-    private $path;
+    private $dataPath;
     /**
-     * @var \Zend\Mvc\I18n\Translator
+     * @var string
+     */
+    private $outputPath;
+    /**
+     * @var Translator
      */
     private $translator;
 
@@ -22,23 +27,26 @@ class Application
     const SYNOPSIS_QUERY = "//div[@class='methodsynopsis dc-description']";
 
     /**
-     * @param string $path
-     * @param \Zend\Mvc\I18n\Translator $translator
+     * @param string $dataPath
+     * @param string $outputPath
+     * @param Translator $translator
      */
-    public function __construct($path, $translator)
+    public function __construct($dataPath, $outputPath, $translator)
     {
-        $this->path = $path;
+        $this->dataPath = $dataPath;
+        $this->outputPath = $outputPath;
         $this->translator = $translator;
     }
 
     /**
-     * @param string $sectionFileName
+     * @param string $sectionName
      */
-    public function execute($sectionFileName)
+    public function execute($sectionName)
     {
+        $sectionFilePath = sprintf("%s%s", $this->dataPath, "ref.{$sectionName}.html");
         $sectionDoc = new \DOMDocument();
-        if (!@$sectionDoc->loadHTMLFile($sectionFileName)) {
-            die("Section file is absent!");
+        if (!$sectionDoc->loadHTMLFile($sectionFilePath)) {
+            die("Section file wasn't loaded!");
         }
         $sectionXpath = new \DOMXPath($sectionDoc);
         $list = $sectionXpath->query(self::LIST_QUERY);
@@ -63,14 +71,17 @@ class Application
             $name = new Name($functionName, $functionTitle);
             $desc = new Description($this->getHtml($synopsis->item(0)));
             $text = sprintf('%s %s', $this->translator->translate('Function'), $name->asText());
-            $link = sprintf("<a href='https://www.php.net/manual/%s/function.%s.php'>%s</a>",
+            $link = sprintf(
+                "<a href='https://www.php.net/manual/%s/function.%s.php'>%s</a>",
                 $this->translator->getLocale(),
-                $functionName, $this->translator->translate('Details'));
+                $name->getNameForUrl(),
+                $this->translator->translate('Details')
+            );
             //important to wrap multiline lines into double quotes for ANKI
             //other double quotes better to replace with single ones
             $extra = sprintf("\"%s\"<br><br>%s", $desc->asHtml(), $link);
             $card = sprintf("%s\t%s\t\n", $text, $extra);
-            file_put_contents($this->path . '../output.csv', $card, FILE_APPEND);
+            file_put_contents($this->outputPath . 'output.csv', $card, FILE_APPEND);
         }
     }
 

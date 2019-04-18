@@ -10,7 +10,6 @@ class Description
     private $synopsisHtml;
 
     /**
-     * Description constructor.
      * @param $synopsisHtml
      */
     public function __construct($synopsisHtml)
