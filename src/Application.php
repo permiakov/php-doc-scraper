@@ -68,9 +68,7 @@ class Application
         if (strpos($functionName, '.html') === false) {
             $functionName = sprintf('function.%s.html', $functionName);
         }
-        echo $functionName . PHP_EOL;
         $functionFileName = sprintf("%s%s", DATA_PATH, $functionName);
-        echo $functionFileName . PHP_EOL;
 
         $functionDoc = new \DOMDocument();
         $functionDoc->preserveWhiteSpace = true;
