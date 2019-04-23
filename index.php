@@ -11,9 +11,13 @@ if (empty(DATA_PATH) || empty(OUTPUT_PATH)) {
 }
 $config = include_once "config/global.php";
 if (!isset($argv[1])) {
-    die("Section name argument was not passed!");
+    die("Section or function name argument was not passed!");
 }
-
 $translator = Translator::factory($config['translator']);
 $app = new \Permiakov\PHPDocScraper\Application(DATA_PATH, OUTPUT_PATH, $translator);
-$app->execute($argv[1]);
+$command = explode('=', $argv[1]);
+if ($command[0] === "s") {
+    $app->processSection($command[1]);
+} else {
+    $app->processFunction($command[1]);
+}

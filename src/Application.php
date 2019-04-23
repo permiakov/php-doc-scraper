@@ -41,7 +41,7 @@ class Application
     /**
      * @param string $sectionName
      */
-    public function execute($sectionName)
+    public function processSection($sectionName)
     {
         $sectionFilePath = sprintf("%s%s", $this->dataPath, "ref.{$sectionName}.html");
         $sectionDoc = new \DOMDocument();
@@ -51,38 +51,58 @@ class Application
         $sectionXpath = new \DOMXPath($sectionDoc);
         $list = $sectionXpath->query(self::LIST_QUERY);
         foreach ($list as $item) {
-            $functionFileName = sprintf("%s%s", DATA_PATH, $item->nodeValue);
-            $functionDoc = new \DOMDocument();
-            $functionDoc->preserveWhiteSpace = true;
-            $functionDoc->formatOutput = true;
-            if (!@$functionDoc->loadHTMLFile($functionFileName)) {
-                die("Function description file is absent!");
-            }
-            $functionXpath = new \DOMXPath($functionDoc);
-            $functionName = $functionXpath->query(self::NAME_QUERY)->item(0)->nodeValue;
-            $functionTitle = $functionXpath->query(self::TITLE_QUERY)->item(0)->nodeValue;
-            $functionTitle = str_replace("\n", '', $functionTitle);
-            $synopsis = $functionXpath->query(self::SYNOPSIS_QUERY);
-
-            if (!$synopsis->item(0)) {
-                continue;
-            }
-
-            $name = new Name($functionName, $functionTitle);
-            $desc = new Description($this->getHtml($synopsis->item(0)));
-            $text = sprintf('%s %s', $this->translator->translate('Function'), $name->asText());
-            $link = sprintf(
-                "<a href='https://www.php.net/manual/%s/function.%s.php'>%s</a>",
-                $this->translator->getLocale(),
-                $name->getNameForUrl(),
-                $this->translator->translate('Details')
-            );
-            //important to wrap multiline lines into double quotes for ANKI
-            //other double quotes better to replace with single ones
-            $extra = sprintf("\"%s\"<br><br>%s", $desc->asHtml(), $link);
-            $card = sprintf("%s\t%s\t\n", $text, $extra);
-            file_put_contents($this->outputPath . 'output.csv', $card, FILE_APPEND);
+            $this->processFunction($item->nodeValue);
         }
+    }
+
+    /**
+     * @param $functionName
+     * @return bool
+     */
+    public function processFunction($functionName)
+    {
+        if (strpos($functionName, '_') > 0) {
+            $functionName = str_replace('_', '-', $functionName);
+        }
+
+        if (strpos($functionName, '.html') === false) {
+            $functionName = sprintf('function.%s.html', $functionName);
+        }
+        echo $functionName . PHP_EOL;
+        $functionFileName = sprintf("%s%s", DATA_PATH, $functionName);
+        echo $functionFileName . PHP_EOL;
+
+        $functionDoc = new \DOMDocument();
+        $functionDoc->preserveWhiteSpace = true;
+        $functionDoc->formatOutput = true;
+        if (!@$functionDoc->loadHTMLFile($functionFileName)) {
+            die("Function description file is absent!");
+        }
+        $functionXpath = new \DOMXPath($functionDoc);
+        $functionName = $functionXpath->query(self::NAME_QUERY)->item(0)->nodeValue;
+        $functionTitle = $functionXpath->query(self::TITLE_QUERY)->item(0)->nodeValue;
+        $functionTitle = str_replace("\n", '', $functionTitle);
+        $synopsis = $functionXpath->query(self::SYNOPSIS_QUERY);
+
+        if (!$synopsis->item(0)) {
+            return false;
+        }
+
+        $name = new Name($functionName, $functionTitle);
+        $desc = new Description($this->getHtml($synopsis->item(0)));
+        $text = sprintf('%s %s', $this->translator->translate('Function'), $name->asText());
+        $link = sprintf(
+            "<a href='https://www.php.net/manual/%s/function.%s.php'>%s</a>",
+            $this->translator->getLocale(),
+            $name->getNameForUrl(),
+            $this->translator->translate('Details')
+        );
+        //important to wrap multiline lines into double quotes for ANKI
+        //other double quotes better to replace with single ones
+        $extra = sprintf("\"%s\"<br><br>%s", $desc->asHtml(), $link);
+        $card = sprintf("%s\t%s\t\n", $text, $extra);
+        file_put_contents($this->outputPath . 'output.csv', $card, FILE_APPEND);
+        return true;
     }
 
     /**
