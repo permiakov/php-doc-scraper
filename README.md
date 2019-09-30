@@ -1,4 +1,4 @@
-# php.net-doc-scraper
+# php.net Documentation Scraper
 When i was preparing to ZCE examination, i used Anki for memorizing the material. Once i tired from creating cards for PHP functions and classes and decided to write a simple helper.  
 
 Script can help you with:
